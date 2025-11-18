@@ -136,3 +136,80 @@ def excluir_produto():
     except sqlite3.Error as e:
         print("❌ Erro ao acessar o banco:", e)
 
+# -----------------------------------------------------
+# Relatório de produtos
+# -----------------------------------------------------
+def listar_produtos():
+    print("\n==========================")
+    print(" 📋 RELATÓRIO DO ESTOQUE ")
+    print("==========================")
+
+    try:
+        with sqlite3.connect(DB_FILE) as conexao:
+            cursor = conexao.cursor()
+            cursor.execute("SELECT * FROM produtos ORDER BY id")
+            produtos = cursor.fetchall()
+
+            if not produtos:
+                print("\n⚠️ Nenhum produto cadastrado.")
+                return
+
+            print(f"{'ID':<5} {'NOME':<25} {'CATEGORIA':<15} {'PREÇO(R$)':<12} {'QTD':<5}")
+            print("-" * 68)
+
+            baixo = 0
+
+            for p in produtos:
+                alerta = "🚨" if p[4] < 5 else " "
+                print(f"{alerta} {p[0]:<5} {p[1]:<25} {p[2]:<15} R$ {p[3]:<9.2f} {p[4]:<5}")
+                if p[4] < 5:
+                    baixo += 1
+
+            print("-" * 68)
+            print(f"\n⚠️ {baixo} produto(s) com estoque baixo (menos que 5).")
+
+    except sqlite3.Error as e:
+        print("❌ Erro ao listar produtos:", e)
+
+
+# -----------------------------------------------------
+# Menu
+# -----------------------------------------------------
+def menu():
+    print("\n--- MÓDULO DE ESTOQUE - MINI ERP ---")
+    print("1 - Cadastrar produto")
+    print("2 - Excluir produto")
+    print("3 - Mostrar relatório")
+    print("4 - Sair")
+    print("-----------------------------------")
+
+
+# -----------------------------------------------------
+# Programa Principal
+# -----------------------------------------------------
+def main():
+    inicializar_banco()
+
+    while True:
+        menu()
+        opcao = input("Escolha uma opção (1-4): ").strip()
+
+        if opcao == "1":
+            cadastrar_produto()
+
+        elif opcao == "2":
+            excluir_produto()
+
+        elif opcao == "3":
+            listar_produtos()
+
+        elif opcao == "4":
+            print("\n👋 Encerrando o sistema...")
+            break
+
+        else:
+            print("❌ Opção inválida.")
+
+
+if __name__ == "__main__":
+    main()
